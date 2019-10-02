@@ -27,7 +27,7 @@ export interface NormalizedCache<T> {
 
 interface HasId {
   id: number;
-  cust_id: NullInt;
+  cust_id?: NullInt;
 }
 
 export function normalize<T extends HasId>(array: Array<T>, useCustID = false) {

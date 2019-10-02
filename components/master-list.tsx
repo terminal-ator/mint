@@ -22,7 +22,7 @@ const MasterList: FC<MasterListProps> = props => {
   };
 
   const filterBasedOnName = async (filteredString: string) => {
-    console.log("Got filterd string:", filteredString);
+    // console.log("Got filterd string:", filteredString);
     if (filteredString === "") setCursor(0);
     const master = props.masters;
 
@@ -32,7 +32,7 @@ const MasterList: FC<MasterListProps> = props => {
           .toLowerCase()
           .startsWith(filteredString.toLowerCase())
       ) {
-        console.log("Setting cursor:", i);
+        // console.log("Setting cursor:", i);
         setCursor(i);
         break;
       }
@@ -46,7 +46,7 @@ const MasterList: FC<MasterListProps> = props => {
 
   const handleKey = async (_: number, key: string) => {
     const newFilter = filter + key;
-    console.log("New filter:", newFilter);
+    // console.log("New filter:", newFilter);
     await filterBasedOnName(newFilter);
     setFilter(newFilter);
   };
@@ -103,7 +103,7 @@ const MasterList: FC<MasterListProps> = props => {
   ];
 
   return (
-    <div>
+    <div style={{ height: "100%" }}>
       <h2>{filter || "filter"}</h2>
       <KeyList
         key={"master-list"}

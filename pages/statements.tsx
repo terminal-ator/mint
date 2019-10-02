@@ -16,6 +16,8 @@ import MasterList from "../components/master-list";
 import withPop from "../components/popup";
 import StatementTR from "../components/statement-tr";
 import { Statement } from "../types/statements";
+import { postStatementMaster } from "../libs/api";
+import { Bank } from "../types/bank";
 
 interface StatementProps {
   masters: NormalizedCache<Master>;
@@ -28,8 +30,8 @@ const StatementFn: NextPage<StatementProps> = props => {
   const [selectedStatement, setSelectedStatement] = useState(statements.all[0]);
   const [cursor, setCursor] = useState(0);
 
-  const handleMasterChange = (masterID: number) => {
-    console.log("Changing master to:", masterID);
+  const handleMasterChange = async (masterID: number) => {
+    // console.log("Changing master to:", masterID);
     // console.log()
     let toStatement = statements.normalized[selectedStatement];
     toStatement.cust_id = { Valid: true, Int64: masterID };
@@ -39,19 +41,23 @@ const StatementFn: NextPage<StatementProps> = props => {
       all: statements.all,
       normalized: { ...statements.normalized, [toStatement.id]: toStatement }
     };
+    await postStatementMaster({
+      cust_id: masterID,
+      statement_id: selectedStatement
+    });
     setStatements(newStatements);
     setDialog(false);
   };
 
   const handleStatSelect = (cursor: number) => {
-    console.log("Cursor:", cursor);
+    // console.log("Cursor:", cursor);
     const statement = statements.normalized[statements.all[cursor]];
-    console.log("Statement ID: ", statement.id);
+    // console.log("Statement ID: ", statement.id);
     toggleDialog(statement.id);
   };
   const toggleDialog = (statID: number) => {
     setSelectedStatement(statID);
-    console.log("Showing stat id: ", statID);
+    // console.log("Showing stat id: ", statID);
     setDialog(true);
   };
 
@@ -70,13 +76,14 @@ const StatementFn: NextPage<StatementProps> = props => {
           "Master",
           "Reference",
           "Deposit",
-          "Withdrawl"
+          "Withdrawl",
+          "Bank"
         ]}
         handleEnter={handleStatSelect}
         cursor={cursor}
         maxHeight={700}
         numberOfRows={20}
-        rowHeight={20}
+        rowHeight={60}
         data={statements}
         width="100%"
         renderItem={(arg: RenderItemProps<Statement>) => {
@@ -121,10 +128,14 @@ StatementFn.getInitialProps = async function() {
   const statements = await fetch("http://localhost:8080/statements");
   const sdata = await statements.json();
 
+  const bankRequest = await fetch("http://localhost:8080/banks");
+  const bankData = await bankRequest.json();
+
   const normalized = normalize<Statement>(sdata.statements);
   const mNormalized = normalize<Master>(data.masters, true);
+  const bankNormaklized = normalize<Bank>(bankData.banks);
 
-  console.log(mNormalized);
+  // console.log(mNormalized);
 
   return {
     masters: mNormalized,

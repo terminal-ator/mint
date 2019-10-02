@@ -1,6 +1,7 @@
 import { Master } from "./master";
 import { NullInt, nullableFloat, NormalizedCache } from "./generic";
 import { MutableRefObject } from "react";
+import { Bank } from "./bank";
 
 export interface Statement {
   id: number;
@@ -12,6 +13,7 @@ export interface Statement {
   deposit: nullableFloat;
   withdrawl: nullableFloat;
   master: Master;
+  bank: Bank;
 }
 
 export interface StatementLiProps {

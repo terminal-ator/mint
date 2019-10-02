@@ -9,6 +9,7 @@ const Dialog = props => {
             top: 0;
             right: 0;
             z-index: 1000;
+            height: 100%;
           }
           .dialog-content {
             background-color: #fff;

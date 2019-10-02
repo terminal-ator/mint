@@ -14,23 +14,37 @@ const StatementTR: FC<StatementLiProps> = ({
   return (
     <tr className={className}>
       <td>{moment(statement.date).format("LL")}</td>
-      <td>{statement.narration}</td>
+      <td className="narration-td">{statement.narration}</td>
       <td>
         {(statement.master && statement.master.name) || "No ledger selected"}
       </td>
       <td>{statement.ref_no}</td>
       <td>{(statement.deposit.Valid && statement.deposit.Float64) || 0}</td>
       <td>{(statement.withdrawl.Valid && statement.withdrawl.Float64) || 0}</td>
+      <td>{statement.bank.name}</td>
       <style jsx>
         {`
+          table {
+            border-collapse: collapse;
+          }
           td {
             min-width: 200px;
+            max-width: 200px;
             text-align: center;
             vertical-align: middle;
+            border: 1px solid black;
+            border-collapse: collapse;
+            overflow: hidden;
           }
           tr {
-            border-bottom: 1px solid black;
             padding: 5px;
+          }
+          .narration-td {
+            overflow: hidden;
+            max-width: 600px;
+            min-width: 600px;
+            padding-left: 10px;
+            padding-right: 10px;
           }
           @keyframes enter {
             0% {
@@ -41,7 +55,8 @@ const StatementTR: FC<StatementLiProps> = ({
             }
           }
           .selected {
-            background: aqua;
+            background: #4c4d45;
+            color: white;
             border: 1px solid black;
           }
           .item {

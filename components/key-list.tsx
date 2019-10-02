@@ -47,7 +47,7 @@ function KeyList<T>(props: KeyProps<T>) {
   });
 
   const [totalheight, setTotalHeight] = useState(
-    props.rowHeight * props.numberOfRows + 200 || 500
+    props.rowHeight * props.numberOfRows + 200 || 800
   );
   const [maxHeight, setMaxHeight] = useState(props.maxHeight || 600);
 
@@ -184,6 +184,11 @@ function KeyList<T>(props: KeyProps<T>) {
       </div>
       <style jsx>
         {`
+          table {
+            table-layout: fixed;
+            white-space: nowrap;
+            border-collapse: collapse;
+          }
           .selected {
             backgroundcolor: aqua;
           }
