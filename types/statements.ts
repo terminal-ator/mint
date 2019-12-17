@@ -2,6 +2,7 @@ import { Master } from "./master";
 import { NullInt, nullableFloat, NormalizedCache } from "./generic";
 import { MutableRefObject } from "react";
 import { Bank } from "./bank";
+import { Company } from "./company";
 
 export interface Statement {
   id: number;
@@ -14,6 +15,7 @@ export interface Statement {
   withdrawl: nullableFloat;
   master: Master;
   bank: Bank;
+  company: Company;
 }
 
 export interface StatementLiProps {
@@ -23,4 +25,5 @@ export interface StatementLiProps {
   inpRef?: MutableRefObject<any>;
   toggleEnter?(id: number): void;
   className?: string;
+  rowHeight?: number;
 }

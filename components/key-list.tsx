@@ -47,7 +47,7 @@ function KeyList<T>(props: KeyProps<T>) {
   });
 
   const [totalheight, setTotalHeight] = useState(
-    props.rowHeight * props.numberOfRows + 200 || 800
+    props.rowHeight * props.numberOfRows + props.rowHeight + 41 || 800
   );
   const [maxHeight, setMaxHeight] = useState(props.maxHeight || 600);
 
@@ -69,7 +69,8 @@ function KeyList<T>(props: KeyProps<T>) {
       position: "absolute" as "absolute",
       height: totalheight,
       backgroundColor: "#fff",
-      width: props.width || 400
+      width: props.width || 400,
+      padding: 10
     },
     list: height => ({
       height,
@@ -175,7 +176,8 @@ function KeyList<T>(props: KeyProps<T>) {
                     style: styles.item(i, props.rowHeight),
                     className: cursor === i ? "selected" : "",
                     setFocus: handleHover,
-                    index: i
+                    index: i,
+                    rowHeight: props.rowHeight
                   })
                 : null;
             })}

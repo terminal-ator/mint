@@ -1,12 +1,18 @@
 import KeyList from "./key-list";
-import { useState, FC, useRef } from "react";
+import { useState, FC, useRef, useEffect } from "react";
 import { Master } from "../types/master";
-import { RenderItemProps, NormalizedCache } from "../types/generic";
+import {
+  RenderItemProps,
+  NormalizedCache,
+  GenerateCacheFromAll
+} from "../types/generic";
+import { Company } from "../types/company";
 
 interface MasterListProps {
   masters: NormalizedCache<Master>;
   handleEnter?(masterID: number): void;
   handleEscape?(_: number, __: string): void;
+  companies?: NormalizedCache<Company>;
 }
 
 const MasterList: FC<MasterListProps> = props => {
@@ -14,17 +20,37 @@ const MasterList: FC<MasterListProps> = props => {
   const [cursor, setCursor] = useState(0);
   const [masters, setMasters] = useState(props.masters);
   // const focusRef = useRef();
+  useEffect(() => {
+    setMasters(props.masters);
+  }, [props.masters]);
 
-  const columns = ["Name"];
+  const columns = [filter];
 
   const selectName = (cursor: number) => {
     props.handleEnter(props.masters.all[cursor]);
   };
 
+  const filterBasedOnCompany = async (companyID: number) => {
+    if (companyID === 0) {
+      setMasters(props.masters);
+      return;
+    }
+
+    const newAll = masters.all.filter(
+      id => props.masters.normalized[id].company_id == companyID
+    );
+
+    const newMasters = GenerateCacheFromAll<Master>(props.masters, newAll);
+    setMasters(newMasters);
+  };
+
   const filterBasedOnName = async (filteredString: string) => {
     // console.log("Got filterd string:", filteredString);
-    if (filteredString === "") setCursor(0);
-    const master = props.masters;
+    if (filteredString === "") {
+      setCursor(0);
+      return 0;
+    }
+    const master = masters;
 
     for (let i = 0; i < master.all.length; i++) {
       if (
@@ -34,9 +60,10 @@ const MasterList: FC<MasterListProps> = props => {
       ) {
         // console.log("Setting cursor:", i);
         setCursor(i);
-        break;
+        return 0;
       }
     }
+    return 1;
   };
 
   // const filterOut = async (filteredString: string) => {
@@ -47,8 +74,9 @@ const MasterList: FC<MasterListProps> = props => {
   const handleKey = async (_: number, key: string) => {
     const newFilter = filter + key;
     // console.log("New filter:", newFilter);
-    await filterBasedOnName(newFilter);
-    setFilter(newFilter);
+    const val = await filterBasedOnName(newFilter);
+    if (val == 0) setFilter(newFilter);
+    else setFilter(filter);
   };
   const handleBackSpace = async (_: number, key: string) => {
     const newFilter = filter.slice(0, -1);
@@ -57,16 +85,20 @@ const MasterList: FC<MasterListProps> = props => {
   };
   function renderItem(arg: RenderItemProps<Master>) {
     // console.log(arg);
-    const styleProps =
-      arg.isHighlighted && false ? { backgroundColor: "aqua" } : {};
     return (
       <tr
         onMouseEnter={() => arg.setFocus(arg.index)}
-        style={{ ...styleProps, ...arg.style }}
+        style={{ ...arg.style }}
         className={arg.className + " " + "item"}
         key={arg.item.id.toString()}
       >
-        <td>{arg.item.name}</td>
+        <td style={{ padding: 5 }}>
+          <span>
+            {arg.item.chq_flg ? <span className="chq-flg">&nbsp; </span> : null}
+            &nbsp;
+            <span>{arg.item.name}</span>
+          </span>
+        </td>
         <style jsx>
           {`
             @keyframes enter {
@@ -74,15 +106,21 @@ const MasterList: FC<MasterListProps> = props => {
                 background: white;
               }
               100% {
-                background: aqua;
+                background: #067df7;
               }
             }
             .selected {
-              background: aqua;
-              border: 1px solid black;
+              background: #067df7;
+              color: white;
+            }
+            .chq-flg {
+              background-color: #53c97c;
+              width: 5px;
             }
             .item {
-              transition: background 0.2s ease-in, border 0.2s ease-in;
+               {
+                /* transition: background 0.2s ease-in, border 0.2s ease-in; */
+              }
               padding: 10px;
             }
           `}
@@ -104,7 +142,7 @@ const MasterList: FC<MasterListProps> = props => {
 
   return (
     <div style={{ height: "100%" }}>
-      <h2>{filter || "filter"}</h2>
+      <p className="filter-text">{filter || "filter"}</p>
       <KeyList
         key={"master-list"}
         columns={columns}
@@ -118,6 +156,13 @@ const MasterList: FC<MasterListProps> = props => {
         handleMisc={handleMisc}
         handleEnter={selectName}
       />
+      <style jsx>
+        {`
+          .filter-text {
+            font-size: 18px;
+          }
+        `}
+      </style>
     </div>
   );
 };

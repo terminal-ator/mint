@@ -8,4 +8,6 @@ export interface Master {
   address: NullString;
   Area: NullString;
   CreatedAt: NullString;
+  company_id: number;
+  chq_flg: number;
 }
