@@ -10,7 +10,8 @@ import {
   NormalizedCache,
   normalize,
   GenerateCacheFromAll,
-  CreateMasterInterface
+  CreateMasterInterface,
+  DeNormalize
 } from "../types/generic";
 import KeyList from "../components/key-list";
 import Dialog from "../components/dialog";
@@ -49,6 +50,7 @@ const StatementFn: NextPage<StatementProps> = props => {
   const [selectedStatement, setSelectedStatement] = useState(statements.all[0]);
   const [cursor, setCursor] = useState(0);
   const [showCreateMaster, setCreateMaster] = useState(false);
+  const [bankFilter, setBankFilter] = useState(0);
 
   const handleMasterChange = async (masterID: number) => {
     // console.log("Changing master to:", masterID);
@@ -98,7 +100,7 @@ const StatementFn: NextPage<StatementProps> = props => {
 
   const handleHideCompleted = async (e: ChangeEvent<HTMLInputElement>) => {
     if (!e.target.checked) {
-      setStatements(await refetchStatements());
+      filterBank(bankFilter);
     } else {
       // const statements = refetchStatements();
       const newStatementsAll = statements.all.filter(id => {
@@ -134,21 +136,22 @@ const StatementFn: NextPage<StatementProps> = props => {
       setStatements(await refetchStatements());
       return;
     }
+    // console.log("Filtering the new :", filterValue);
     const statements = await refetchStatements();
-    const newStatementsAll = statements.all.filter(id => {
-      return statements.normalized[id].bank.id == filterValue;
-    });
+    const filterStatements = DeNormalize<Statement>(statements);
 
-    const newStatements = GenerateCacheFromAll<Statement>(
-      statements,
-      newStatementsAll
+    const nwStatements = filterStatements.filter(
+      stat => stat.bank.id == filterValue
     );
+    const newStatements = normalize<Statement>(nwStatements);
 
     setStatements(newStatements);
   };
 
   const handleBankChange = async (e: ChangeEvent<HTMLSelectElement>) => {
+    // console.log("Changing bank to :", e.target.value);
     const newBank = e.target.value;
+    setBankFilter(parseInt(newBank));
     filterBank(parseInt(newBank));
     setOptionTag(newBank);
   };
@@ -164,7 +167,7 @@ const StatementFn: NextPage<StatementProps> = props => {
 
     setStatements(normalize<Statement>(sData.statements));
     const newMs = normalize<Master>(mData.masters, true);
-    console.log(newMs);
+    // console.log(newMs);
     setMasters(newMs);
 
     setBanks(normalize<Bank>(bData.banks));
@@ -172,7 +175,7 @@ const StatementFn: NextPage<StatementProps> = props => {
   };
 
   const handleCreateMaster = async (formData: CreateMasterInterface) => {
-    console.log("showting fata", formData);
+    // console.log("showting fata", formData);
     await postCreateMasters(formData);
     const masterPacket = await getCompanyMasters(companyID);
     const mData = await masterPacket.data;
@@ -219,14 +222,16 @@ const StatementFn: NextPage<StatementProps> = props => {
               );
             })}
           </select>
-          <label>
-            <input
-              onChange={handleHideCompleted}
-              type="checkbox"
-              placeholder="Show outstandings"
-            />
-            Show Outstandings
-          </label>
+          <p className="filters">
+            <label>
+              <input
+                onChange={handleHideCompleted}
+                type="checkbox"
+                placeholder="Show outstandings"
+              />
+              Show Outstandings
+            </label>
+          </p>
         </div>
         <div
           onClick={() => {
@@ -251,10 +256,9 @@ const StatementFn: NextPage<StatementProps> = props => {
           handleEnter={handleStatSelect}
           cursor={cursor}
           maxHeight={700}
-          numberOfRows={10}
+          numberOfRows={14}
           rowHeight={40}
           data={statements}
-          width="100%"
           renderItem={(arg: RenderItemProps<Statement>) => {
             return (
               <StatementTR
@@ -297,6 +301,36 @@ const StatementFn: NextPage<StatementProps> = props => {
           }
           .config > select {
             margin-left: 5px;
+          }
+          select {
+            padding: 1px;
+            padding-left: 10px;
+            padding-right: 10px;
+            font-family: "Open Sans", "Helvetica Neue", "Segoe UI", "Calibri",
+              "Arial", sans-serif;
+            font-size: 18px;
+            color: #60666d;
+            background-color: white;
+            box-shadow: 0 15px 30px -10px transparentize(#000, 0.9);
+          }
+          button {
+            padding: 5px;
+            padding-left: 10px;
+            padding-right: 10px;
+            font-family: "Open Sans", "Helvetica Neue", "Segoe UI", "Calibri",
+              "Arial", sans-serif;
+            font-size: 18px;
+            background-color: white;
+            border: 1px solid #3e3e3f;
+            margin-left: 10px;
+          }
+          button:hover {
+            outline: 1px solid blue;
+          }
+          .filters {
+            font-family: "Open Sans", "Helvetica Neue", "Segoe UI", "Calibri",
+              "Arial", sans-serif;
+            font-size: 18px;
           }
         `}
       </style>

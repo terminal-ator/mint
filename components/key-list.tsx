@@ -17,11 +17,12 @@ interface KeyProps<T> {
 
 function KeyList<T>(props: KeyProps<T>) {
   const [cursor, setCursor] = useState(props.cursor);
+  const prevCursor = usePrevious(cursor);
   const [lowerCursorBound, setLoweCursorBound] = useState(props.cursor);
   const [upperCursorBound, setUpperCursorBound] = useState(
     props.cursor + props.numberOfRows
   );
-  console.log("Current cursors bound:", lowerCursorBound, upperCursorBound);
+  // console.log("Current cursors bound:", lowerCursorBound, upperCursorBound);
 
   useEffect(() => {
     setCursor(props.cursor);
@@ -29,17 +30,28 @@ function KeyList<T>(props: KeyProps<T>) {
   // console.log("Getting cursor in keylist", cursor, props.cursor);
 
   useEffect(() => {
+    const jumpFactor = cursor - prevCursor > 1 ? props.numberOfRows / 2 - 3 : 0;
     if (cursor > upperCursorBound) {
-      setUpperCursorBound(cursor);
-      setLoweCursorBound(cursor - props.numberOfRows);
+      setUpperCursorBound(cursor + jumpFactor);
+      setLoweCursorBound(cursor - props.numberOfRows + jumpFactor);
       return;
     }
     if (cursor < lowerCursorBound) {
-      setLoweCursorBound(cursor);
-      setUpperCursorBound(cursor + props.numberOfRows);
+      setLoweCursorBound(cursor - jumpFactor);
+      setUpperCursorBound(cursor + props.numberOfRows - jumpFactor);
       return;
     }
   }, [cursor]);
+
+  function usePrevious(value): number {
+    const ref = useRef();
+
+    useEffect(() => {
+      ref.current = value;
+    }, [value]);
+
+    return ref.current;
+  }
 
   const Focus = useRef(null);
   useEffect(() => {
@@ -69,10 +81,10 @@ function KeyList<T>(props: KeyProps<T>) {
       position: "absolute" as "absolute",
       height: totalheight,
       backgroundColor: "#fff",
-      width: props.width || 400,
+      width: props.width,
       padding: 10
     },
-    list: height => ({
+    list: (height: number) => ({
       height,
       position: "relative" as "relative",
       overflow: "hidden" as "hidden"
@@ -122,7 +134,10 @@ function KeyList<T>(props: KeyProps<T>) {
     // character code logic
     if (
       props.handleCharacter &&
-      ((e.keyCode > 47 && e.keyCode < 91) || e.keyCode === 32)
+      ((e.keyCode > 47 && e.keyCode < 91) ||
+        e.keyCode === 32 ||
+        e.keyCode == 190 ||
+        e.keyCode == 188)
     ) {
       const val = e.key.toString();
       props.handleCharacter(cursor, val);
